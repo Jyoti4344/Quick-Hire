@@ -5,7 +5,7 @@ function About() {
   return (
     <div className="about">
       <h2>About Quick Hire</h2>
-      <p className="about-section">
+      <div className="box">
         Quick Hire is an innovative tool designed to help users enhance their
         interview performance through real-time feedback and AI-powered
         analysis. This platform leverages advanced machine learning algorithms
@@ -19,7 +19,7 @@ function About() {
         intuitive interface makes it easy for users to start a mock interview
         with a single click, and our team is committed to creating a supportive,
         insightful tool that empowers users to excel in real-world interviews.
-      </p>
+      </div>
     </div>
   );
 }

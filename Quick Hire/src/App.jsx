@@ -4,7 +4,6 @@ import Home from './components/Home';
 import About from './components/About'
 import Team from './components/Team';
 import Interview from './components/Interview';
-import Footer from './components/Footer';
 import './index.css';
 
 function App() { 
@@ -35,7 +34,6 @@ function App() {
       <main className="main-content">
         {renderPage()}
       </main>
-      <Footer />
     </div>
   );
 }
