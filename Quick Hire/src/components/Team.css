@@ -80,6 +80,32 @@
   .member-role {
     color: #a8a8a8;
     font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .member-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .member-links a {
+    font-size: 1.5rem;
+    color: #ffffff;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .member-links a:hover {
+    transform: scale(1.2);
+  }
+  
+  .github-link:hover {
+    color: #6e5494;
+  }
+  
+  .linkedin-link:hover {
+    color: #0077b5;
   }
   
   .connection-lines {
@@ -181,5 +207,9 @@
   
     .member-role {
       font-size: 0.9rem;
+    }
+  
+    .member-links a {
+      font-size: 1.2rem;
     }
   }

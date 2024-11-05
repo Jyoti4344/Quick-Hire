@@ -8,7 +8,7 @@ function Navbar({ onPageChange }) {
       <div className="navbar-content">
         <div className="navbar-logo">
           <img src={logo1} alt="none" className='quicklogos' />
-          <span>Quick Hire</span>
+          <span className='quicky'>Quick Hire</span>
         </div>
         <div className="navbar-links">
           <a href="#" onClick={() => onPageChange('team')}>Team</a>

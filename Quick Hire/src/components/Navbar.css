@@ -1,5 +1,5 @@
 .navbar {
-  background-color: #ffffff;
+  background-color: #000000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 1rem 2rem;
   position: fixed;
@@ -23,7 +23,8 @@
 }
 
 .navbar:hover {
-  background-color: rgba(255, 255, 255, 0.95); /* Lightens on hover */
+  background: linear-gradient(90deg, rgba(0, 168, 255, 0.9), rgba(112, 206, 255, 0.9), rgba(0, 242, 96, 0.9));
+  transition: background 0.5s ease;
 }
 
 .navbar-content {
@@ -32,6 +33,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.quicky{
+  color: #ffffff;
 }
 
 .navbar-logo {
@@ -58,7 +62,7 @@
 .navbar-links a {
   margin-left: 2.5rem; /* Increased gap for better spacing */
   text-decoration: none;
-  color: #333;
+  color: #ffffff;
   font-size: 1.2rem; /* Increased size for readability */
   padding: 0.5rem 0; /* Adds padding for a better click area */
   position: relative;

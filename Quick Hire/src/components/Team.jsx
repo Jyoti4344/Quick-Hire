@@ -2,28 +2,39 @@ import React from 'react';
 import './Team.css';
 import My_profile from '../assets/My_profile.jpg'
 import subho_pic from '../assets/subho_pic.jpg'
+import ankit from '../assets/ankit.jpg'
+import utkarsh from '../assets/utkarsh.jpg'
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 export default function Team() {
   const teamMembers = [
     {
       name: "Ankit Nair",
       role: "Design and Dev",
-      image: "/placeholder.svg?height=200&width=200"
+      image: ankit,
+      github: "https://github.com/ankitnair01",
+      linkedin: "https://linkedin.com/in/ankit-nair01"
     },
     {
       name: "Anil Panth",
       role: "Frontend and Dev",
-      image: My_profile
+      image: My_profile,
+      github: "https://github.com/Anilpanth-hue",
+      linkedin: "http://www.linkedin.com/in/anil-panth-b060a2256"
     },
     {
       name: "Subhojit Mukhopadhyay",
       role: "Github and DevOps",
-      image: subho_pic
+      image: subho_pic,
+      github: "https://github.com/Subho-code",
+      linkedin: "https://www.linkedin.com/in/subhojit-mukhopadhyay/"
     },
     {
       name: "Utkarsh Sharma",
       role: "Backend and Dev",
-      image: "/placeholder.svg?height=200&width=200"
+      image: utkarsh,
+      github: "https://github.com/utkarsh032003",
+      linkedin: "https://www.linkedin.com/in/utkarsh-sharma-a6a620226/"
     }
   ];
 
@@ -44,6 +55,14 @@ export default function Team() {
                 </div>
                 <h3 className="member-name">{member.name}</h3>
                 <p className="member-role">{member.role}</p>
+                <div className="member-links">
+                  <a href={member.github} target="_blank" rel="noopener noreferrer" className="github-link">
+                    <FaGithub />
+                  </a>
+                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="linkedin-link">
+                    <FaLinkedin />
+                  </a>
+                </div>
               </div>
             </div>
           ))}

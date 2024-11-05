@@ -6,6 +6,7 @@ import Team from './components/Team';
 import Interview from './components/Interview';
 import './index.css';
 import Login from './components/Login';
+import Footer from './components/Footer';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -24,6 +25,7 @@ function App() {
         <Home onStartClick={() => handlePageChange('interview')} />
         <About />
         <Team />
+        <Footer />
       </>
     );
   };
