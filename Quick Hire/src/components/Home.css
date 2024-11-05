@@ -1,0 +1,63 @@
+.home {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 4rem);
+  background-color: #f0f8ff;
+}
+
+.home-content {
+  text-align: center;
+}
+
+.home-box {
+  background-color: white; /* Changed to white */
+  padding: 6rem 7rem; /* Increased padding for larger box */
+  border-radius: 1rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 90%;
+}
+
+.home-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  color: #006400; /* Changed font color to dark green */
+}
+
+.start-button {
+  background-color: yellow; /* Changed to yellow */
+  color: black; /* Adjusted text color for better contrast */
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.start-button:hover {
+  background-color: #e6e600; /* Adjusted hover color for visibility */
+  transform: scale(1.05);
+}
+
+.start-button:active {
+  background-color: #cccc00; /* Adjusted active state color */
+  transform: scale(1);
+}
+
+@media (max-width: 768px) {
+  .home-box {
+    padding: 4rem 5rem; /* Adjusted for mobile responsiveness */
+  }
+
+  .start-button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+  }
+}
