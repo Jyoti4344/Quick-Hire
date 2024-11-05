@@ -11,9 +11,9 @@ function Navbar({ onPageChange }) {
           <span>Quick Hire</span>
         </div>
         <div className="navbar-links">
-          <a href="#" onClick={() => onPageChange('home')}>Home</a>
-          <a href="#" onClick={() => onPageChange('about')}>About</a>
           <a href="#" onClick={() => onPageChange('team')}>Team</a>
+          <a href="#" onClick={() => onPageChange('login')}>Login</a>
+          <a href="#" onClick={() => onPageChange('logo')}>Logo</a>          
         </div>
       </div>
     </nav>

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
-import About from './components/About'
+import About from './components/About';
 import Team from './components/Team';
 import Interview from './components/Interview';
 import './index.css';
+import Login from './components/Login';
 
-function App() { 
+function App() {
   const [currentPage, setCurrentPage] = useState('home');
 
   const handlePageChange = (page) => {
@@ -14,18 +15,17 @@ function App() {
   };
 
   const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <Home onStartClick={() => handlePageChange('interview')} />;
-      case 'about':
-        return <About />;
-      case 'team':
-        return <Team />;
-      case 'interview':
-        return <Interview onButtonClick={() => handlePageChange('interview')} />;
-      default:
-        return <Home onStartClick={() => handlePageChange('interview')} />;
+    if (currentPage === 'interview') {
+      return <Interview />;
     }
+    
+    return (
+      <>
+        <Home onStartClick={() => handlePageChange('interview')} />
+        <About />
+        <Team />
+      </>
+    );
   };
 
   return (
@@ -37,5 +37,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;
