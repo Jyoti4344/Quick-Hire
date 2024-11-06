@@ -23,8 +23,7 @@
 }
 
 .navbar:hover {
-  background: linear-gradient(90deg, rgba(0, 168, 255, 0.9), rgba(112, 206, 255, 0.9), rgba(0, 242, 96, 0.9));
-  transition: background 0.5s ease;
+  color: #000000;
 }
 
 .navbar-content {
@@ -36,11 +35,12 @@
 }
 .quicky{
   color: #ffffff;
+  margin-left: 10px;
 }
 
 .navbar-logo {
   display: flex;
-  align-items: center; /* Aligns text and logo vertically */
+  align-items:center; /* Aligns text and logo vertically */
   font-size: 2rem; /* Keeps size for visibility */
   font-weight: bold;
   color: #333;

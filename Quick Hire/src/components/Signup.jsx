@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import './Signup.css';
+import React, { useState } from "react";
+import "./Signup.css";
 
 function Signup() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (step === 1) {
       // Here you would typically send an API request to create an account and send OTP
-      console.log('Account creation initiated:', { name, email, password });
+      console.log("Account creation initiated:", { name, email, password });
       setStep(2);
     } else {
       // Here you would typically verify the OTP
-      console.log('OTP submitted:', otp);
+      console.log("OTP submitted:", otp);
       // If OTP is correct, create the account
-      console.log('Account created successfully!');
+      console.log("Account created successfully!");
     }
   };
 
@@ -78,7 +78,7 @@ function Signup() {
         <span></span>
         <span></span>
         <span></span>
-        {step === 1 ? 'Sign Up' : 'Verify OTP'}
+        {step === 1 ? "Sign Up" : "Verify OTP"}
       </button>
     </form>
   );
