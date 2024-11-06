@@ -13,32 +13,37 @@ function App() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    if (page === 'home') {
+      window.scrollTo(0, 0);
+    }
   };
 
   const renderPage = () => {
-    if (currentPage === 'interview') {
-      return <Interview />;
+    switch (currentPage) {
+      case 'interview':
+        return <Interview />;
+      case 'login':
+        return <Login />;
+      default:
+        return (
+          <>
+            <Home onStartClick={() => handlePageChange('interview')} />
+            <About />
+            <Team />
+            <Footer />
+          </>
+        );
     }
-    
-    return (
-      <>
-        <Home onStartClick={() => handlePageChange('interview')} />
-        <About />
-        <Team />
-        <Footer />
-      </>
-    );
   };
 
   return (
     <div className="app">
-      <Navbar onPageChange={handlePageChange} />
+      <Navbar onPageChange={handlePageChange} currentPage={currentPage} />
       <main className="main-content">
         {renderPage()}
       </main>
     </div>
   );
 }
-
 
 export default App;

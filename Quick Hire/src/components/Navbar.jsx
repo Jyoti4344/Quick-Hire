@@ -2,7 +2,7 @@ import React from 'react';
 import '../components/Navbar.css';
 import logo1 from '../assets/logo1.jpg';
 
-function Navbar({ onPageChange }) {
+function Navbar({ onPageChange, currentPage }) {
   return (
     <nav className="navbar">
       <div className="navbar-content">
@@ -11,9 +11,13 @@ function Navbar({ onPageChange }) {
           <span className='quicky'>Quick Hire</span>
         </div>
         <div className="navbar-links">
-          <a href="#" onClick={() => onPageChange('team')}>Team</a>
-          <a href="#" onClick={() => onPageChange('login')}>Login</a>
-          <a href="#" onClick={() => onPageChange('logo')}>Logo</a>          
+          {currentPage !== 'home' && (
+            <a href="#" onClick={() => onPageChange('home')}>Home</a>
+          )}
+          {currentPage !== 'login' && (
+            <a href="#" onClick={() => onPageChange('login')}>Login</a>
+          )}
+          <a href="#" onClick={() => onPageChange('home')}>Logo</a>
         </div>
       </div>
     </nav>

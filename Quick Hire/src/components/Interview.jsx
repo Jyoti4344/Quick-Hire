@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera, faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
-function Interview({ onButtonClick }) {
+function Interview() {
   // State to track the active status of each button
   const [activeButtons, setActiveButtons] = useState({
     camera: false,
@@ -15,7 +15,6 @@ function Interview({ onButtonClick }) {
   const handleButtonClick = (button) => {
     // Toggle the active state of the clicked button
     setActiveButtons((prev) => ({ ...prev, [button]: !prev[button] }));
-    onButtonClick(); // Call the passed function
   };
 
   return (
