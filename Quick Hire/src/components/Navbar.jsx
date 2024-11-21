@@ -17,7 +17,6 @@ function Navbar({ onPageChange, currentPage }) {
           {currentPage !== 'login' && (
             <a href="#" onClick={() => onPageChange('login')}>Login</a>
           )}
-          <a href="#" onClick={() => onPageChange('home')}>Logo</a>
         </div>
       </div>
     </nav>

@@ -4,9 +4,9 @@ import Home from './components/Home';
 import About from './components/About';
 import Team from './components/Team';
 import Interview from './components/Interview';
-import './index.css';
 import Login from './components/Login';
 import Footer from './components/Footer';
+import './index.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');

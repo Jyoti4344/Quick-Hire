@@ -1,5 +1,5 @@
-import React from 'react';
-import './About.css';
+import React from "react";
+import "./About.css";
 
 export default function About() {
   return (
@@ -10,10 +10,16 @@ export default function About() {
           <div className="about-content">
             <div className="about-text">
               <p className="about-description">
-                Quick Hire is an innovative tool designed to help users enhance their interview performance through real-time feedback and AI-powered analysis. This platform leverages advanced machine learning algorithms to assess key elements of an interviewee's presentation, including attire, posture, and confidence level.
+                Quick Hire is an innovative tool designed to help users enhance
+                their interview performance through real-time feedback and
+                AI-powered analysis. This platform leverages advanced machine
+                learning algorithms to assess key elements of an interviewee's
+                presentation, including attire, posture, and confidence level.
               </p>
               <p className="about-description">
-                By analyzing visual and vocal cues via integrated camera and microphone access, Quick Hire offers tailored feedback to help users identify their strengths and areas for improvement.
+                By analyzing visual and vocal cues via integrated camera and
+                microphone access, Quick Hire offers tailored feedback to help
+                users identify their strengths and areas for improvement.
               </p>
             </div>
             <div className="about-features-container">

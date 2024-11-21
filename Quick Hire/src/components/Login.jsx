@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import './Login.css';
-import Signup from './Signup';
+import React, { useState } from "react";
+import "./Login.css";
+import Signup from "./Signup";
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Login submitted:', email, password);
+    console.log("Login submitted:", email, password);
   };
 
   return (
     <div className="login-container">
       <div className="login-box">
         <div className="login-content">
-          <h2>{isLogin ? 'ENTER THE VOID' : 'JOIN THE VOID'}</h2>
+          <h2>{isLogin ? "ENTER THE VOID" : "JOIN THE VOID"}</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <input
@@ -41,13 +41,13 @@ function Login() {
               />
             </div>
             <button type="submit" className="login-button">
-              {isLogin ? 'Login' : 'Sign Up'}
+              {isLogin ? "Login" : "Sign Up"}
             </button>
           </form>
           <p className="switch-form">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <a href="#" onClick={() => setIsLogin(!isLogin)}>
-              {isLogin ? 'Sign up' : 'Login'}
+              {isLogin ? "Sign up" : "Login"}
             </a>
           </p>
         </div>
