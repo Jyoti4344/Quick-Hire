@@ -94,6 +94,9 @@
   align-items: center;
   height: 100%;
   background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .ai-avatar {
