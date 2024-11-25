@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Login.css";
+import axios from "axios";
 
 function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,17 +18,31 @@ function Login() {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSignUp) {
-      console.log("Sign up submitted:", {
-        username,
-        email,
-        password,
-        confirmPassword,
-      });
+      // Sign up
+      try {
+        const response = await axios.post("http://localhost:8080/auth/signup", {
+          username,
+          email,
+          password,
+        });
+        alert(response.data);
+      } catch (error) {
+        alert(error.response.data);
+      }
     } else {
-      console.log("Login submitted:", { email, password });
+      // Sign in
+      try {
+        const response = await axios.post("http://localhost:8080/auth/signin", {
+          email,
+          password,
+        });
+        alert(response.data);
+      } catch (error) {
+        alert(error.response.data);
+      }
     }
   };
 
