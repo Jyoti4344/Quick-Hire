@@ -60,9 +60,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">
+      {/* <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} Quick Hire. All rights reserved.</p>
-      </div>
+      </div> */}
     </footer>
   );
 }

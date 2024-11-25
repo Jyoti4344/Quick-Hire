@@ -1,24 +1,39 @@
-import OpenAI from 'openai';
+import { Configuration, OpenAIApi } from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Only use this for development. In production, use a backend service.
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getAIResponse(messages) {
+const openai = new OpenAIApi(configuration);
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    const { message, messages } = req.body;
+
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
       messages: [
-        { role: 'system', content: "You are an AI interviewer asking questions and responding based on the user's answers." },
-        ...messages
+        { 
+          role: "system", 
+          content: "You are an AI interviewer conducting a job interview. Ask relevant questions about the candidate's experience and skills." 
+        },
+        ...messages,
+        { role: "user", content: message }
       ],
     });
 
-    return response.choices[0].message.content;
+    res.status(200).json({ 
+      message: completion.data.choices[0].message.content 
+    });
   } catch (error) {
-    console.error("Error fetching AI response:", error);
-    throw error;
+    console.error('Error:', error);
+    res.status(500).json({ 
+      message: "An error occurred while processing your request." 
+    });
   }
 }
 

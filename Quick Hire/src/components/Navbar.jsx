@@ -24,3 +24,5 @@ function Navbar({ onPageChange, currentPage }) {
 }
 
 export default Navbar;
+
+
