@@ -12,9 +12,9 @@
 .quicklogos {
   width: 3.1rem;
   height: 2.5rem; 
-  margin-right: 10px; 
+  margin-right: 2px; 
   border-radius: 8px; 
-  object-fit: contain;
+  object-fit: contain;  
 }
 
 .navbar-logo:hover .quicklogos {
