@@ -10,7 +10,7 @@ export default function Team() {
   const teamMembers = [
     {
       name: "Ankit Nair",
-      role: "Design and Dev",
+      role: "Design, ML and Backend",
       image: ankit,
       github: "https://github.com/ankitnair01",
       linkedin: "https://linkedin.com/in/ankit-nair01"
