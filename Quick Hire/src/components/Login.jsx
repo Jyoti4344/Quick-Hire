@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Login.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -8,6 +9,9 @@ function Login() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // For loading state
+  const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
     const container = document.getElementById("container");
@@ -20,29 +24,39 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSignUp) {
-      // Sign up
-      try {
-        const response = await axios.post("http://localhost:8080/auth/signup", {
+    setError(""); // Clear previous errors
+    setLoading(true); // Show loading state
+
+    try {
+      if (isSignUp) {
+        // Sign up
+        if (password !== confirmPassword) {
+          setError("Passwords do not match!");
+          setLoading(false);
+          return;
+        }
+        const response = await axios.post("http://localhost:5000/auth/signup", {
           username,
           email,
           password,
         });
-        alert(response.data);
-      } catch (error) {
-        alert(error.response.data);
-      }
-    } else {
-      // Sign in
-      try {
-        const response = await axios.post("http://localhost:8080/auth/signin", {
+        alert(response.data.message || "Signup successful!");
+        setIsSignUp(false); // Switch to login after signup
+      } else {
+        // Sign in
+        const response = await axios.post("http://localhost:5000/auth/signin", {
           email,
           password,
         });
-        alert(response.data);
-      } catch (error) {
-        alert(error.response.data);
+        // Save the JWT token to localStorage
+        localStorage.setItem("token", response.data.token);
+        alert("Login successful!");
+        navigate("/dashboard"); // Redirect to dashboard or homepage
       }
+    } catch (error) {
+      setError(error.response?.data?.message || "Something went wrong. Try again.");
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -58,6 +72,7 @@ function Login() {
   return (
     <div id="container" className="container">
       <div className="row">
+        {error && <p className="error-message">{error}</p>}
         <div className="col align-items-center flex-col sign-up">
           <div className="form-wrapper align-items-center">
             <div className="form sign-up">
@@ -97,7 +112,9 @@ function Login() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
-              <button onClick={handleSubmit}>Sign up</button>
+              <button onClick={handleSubmit} disabled={loading}>
+                {loading ? "Processing..." : "Sign up"}
+              </button>
               <p>
                 <span>Already have an account?</span>
                 <b onClick={toggle} className="pointer">
@@ -113,8 +130,8 @@ function Login() {
               <div className="input-group">
                 <i className="bx bxs-user"></i>
                 <input
-                  type="text"
-                  placeholder="Username"
+                  type="email"
+                  placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -128,7 +145,9 @@ function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <button onClick={handleSubmit}>Sign in</button>
+              <button onClick={handleSubmit} disabled={loading}>
+                {loading ? "Processing..." : "Sign in"}
+              </button>
               <p>
                 <b>Forgot password?</b>
               </p>

@@ -20,6 +20,7 @@
 .navbar-logo:hover .quicklogos {
   transform: scale(1.05); /* Slight enlargement on hover */
   transition: transform 0.3s ease;
+  
 }
 
 .navbar:hover {

@@ -1,41 +1,60 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "./Signup.css";
 
 function Signup() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState(""); // Renamed from `name` for clarity
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (step === 1) {
-      // Here you would typically send an API request to create an account and send OTP
-      console.log("Account creation initiated:", { name, email, password });
-      setStep(2);
-    } else {
-      // Here you would typically verify the OTP
-      console.log("OTP submitted:", otp);
-      // If OTP is correct, create the account
-      console.log("Account created successfully!");
+    setError(""); // Clear previous errors
+    setLoading(true);
+
+    try {
+      if (step === 1) {
+        // Step 1: Send Signup Request and Trigger OTP
+        await axios.post("http://localhost:5000/auth/signup", {
+          username,
+          email,
+          password,
+        });
+        alert("OTP sent to your email. Verify to complete registration.");
+        setStep(2); // Move to OTP verification step
+      } else {
+        // Step 2: Verify OTP
+        await axios.post("http://localhost:5000/auth/verify", { email, otp });
+        alert("Account created successfully!");
+        // Redirect to login page or dashboard after successful verification
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || "Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <p className="error-message">{error}</p>}
       {step === 1 ? (
         <>
           <div className="input-group">
             <input
               type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="glowing-input"
             />
-            <label htmlFor="name">Name</label>
+            <label htmlFor="username">Username</label>
           </div>
           <div className="input-group">
             <input
@@ -73,12 +92,8 @@ function Signup() {
           <label htmlFor="otp">Enter OTP</label>
         </div>
       )}
-      <button type="submit" className="login-button">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        {step === 1 ? "Sign Up" : "Verify OTP"}
+      <button type="submit" className="login-button" disabled={loading}>
+        {loading ? "Processing..." : step === 1 ? "Sign Up" : "Verify OTP"}
       </button>
     </form>
   );
