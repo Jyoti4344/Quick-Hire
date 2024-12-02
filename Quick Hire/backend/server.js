@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const questions = require("./questions");
 const mongoose = require("mongoose");
 // const questions = require("./questions");
 require("dotenv").config();
@@ -10,6 +11,9 @@ require("dotenv").config();
 // app.get("/api/questions", (req, res) => {
 //   res.send({ questions });
 // });
+
+// Import OpenAI route
+const openaiRoutes = require("./openai"); // Assuming openai.js is in the same backend folder
 
 // Initialize Express app
 const app = express();
@@ -254,3 +258,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`👉 CORS enabled for origins: ${corsOptions.origin.join(", ")}`);
 });
+app.get("/api/questions", (req, res) => {
+    res.send({ questions });
+  });
