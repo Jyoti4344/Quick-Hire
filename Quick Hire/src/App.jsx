@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import About from "./components/About";
 import Team from "./components/Team";
 import Interview from "./components/Interview";
 import Chat from "./components/Chat";
-import "./index.css";
 import Login from "./components/Login";
 import Footer from "./components/Footer";
+import "./index.css";
 import "boxicons/css/boxicons.min.css";
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
       case "interview":
         return <Interview />;
       case "login":
-        return <Login />;
+        return <Login onLoginSuccess={() => handlePageChange("home")} />;
       case "chat":
         return <Chat />;
       default:
@@ -36,15 +37,17 @@ function App() {
             <Team />
             <Footer />
           </>
-      );
+        );
     }
   };
 
   return (
-    <div className="app">
-      <Navbar onPageChange={handlePageChange} currentPage={currentPage} />
-      <main className="main-content">{renderPage()}</main>
-    </div>
+    <AuthProvider>
+      <div className="app">
+        <Navbar onPageChange={handlePageChange} currentPage={currentPage} />
+        <main className="main-content">{renderPage()}</main>
+      </div>
+    </AuthProvider>
   );
 }
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import "./Login.css";
-import { useNavigate } from "react-router-dom";
 import AuthService from "../common/AuthService";
+import { useAuth } from "../context/AuthContext";
+import "./Login.css";
 
-function Login() {
+function Login({ onLoginSuccess }) {
+  const { setUser } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -13,7 +14,6 @@ function Login() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const container = document.getElementById("container");
@@ -28,12 +28,12 @@ function Login() {
       ...prev,
       [name]: value,
     }));
-    if (error) setError("");
+    setError("");
   };
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
-      setError("All fields are required");
+      setError("Email and password are required");
       return false;
     }
     if (isSignUp) {
@@ -67,29 +67,30 @@ function Login() {
           formData.email,
           formData.password
         );
-        if (response.data.message) {
-          toggle();
-          setFormData((prev) => ({
-            ...prev,
-            username: "",
-            confirmPassword: "",
-          }));
-        }
+        console.log("Registration successful:", response);
+        toggle();
+        setFormData((prev) => ({
+          ...prev,
+          username: "",
+          confirmPassword: "",
+        }));
       } else {
+        console.log("Attempting login with:", formData.email);
         const response = await AuthService.login(
           formData.email,
           formData.password
         );
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-          navigate("/dashboard");
+        console.log("Login successful:", response);
+        setUser(response.user);
+        if (onLoginSuccess) {
+          onLoginSuccess();
         }
       }
     } catch (err) {
       console.error("Auth error:", err);
       setError(
-        err.response?.data?.message ||
-          "Network error. Please check your connection and try again."
+        err.message ||
+          "An error occurred. Please check your credentials and try again."
       );
     } finally {
       setLoading(false);
@@ -97,20 +98,20 @@ function Login() {
   };
 
   const toggle = () => {
+    if (loading) return;
     setError("");
+    setIsSignUp((prev) => !prev);
+    setFormData({
+      email: "",
+      password: "",
+      username: "",
+      confirmPassword: "",
+    });
     const container = document.getElementById("container");
     if (container) {
-      if (container.dataset.animating === "true") return;
-
-      container.dataset.animating = "true";
       container.classList.toggle("sign-in");
       container.classList.toggle("sign-up");
-
-      setTimeout(() => {
-        container.dataset.animating = "false";
-      }, 1000);
     }
-    setIsSignUp(!isSignUp);
   };
 
   return (
@@ -133,6 +134,7 @@ function Login() {
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
                 />
               </div>
               <div className="input-group">
@@ -144,6 +146,7 @@ function Login() {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
                 />
               </div>
               <div className="input-group">
@@ -155,6 +158,8 @@ function Login() {
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
+                  minLength={6}
                 />
               </div>
               <div className="input-group">
@@ -166,6 +171,7 @@ function Login() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
                 />
               </div>
               <button type="submit" disabled={loading}>
@@ -173,7 +179,7 @@ function Login() {
               </button>
               <p>
                 <span>Already have an account?</span>
-                <b onClick={!loading ? toggle : undefined} className="pointer">
+                <b onClick={toggle} className="pointer">
                   Sign in here
                 </b>
               </p>
@@ -192,6 +198,7 @@ function Login() {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
                 />
               </div>
               <div className="input-group">
@@ -203,6 +210,7 @@ function Login() {
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={loading}
+                  required
                 />
               </div>
               <button type="submit" disabled={loading}>
@@ -213,7 +221,7 @@ function Login() {
               </p>
               <p>
                 <span>Don't have an account?</span>
-                <b onClick={!loading ? toggle : undefined} className="pointer">
+                <b onClick={toggle} className="pointer">
                   Sign up here
                 </b>
               </p>
@@ -224,7 +232,7 @@ function Login() {
       <div className="row content-row">
         <div className="col align-items-center flex-col">
           <div className="text sign-in">
-            <h2>Welcome</h2>
+            <h2>Welcome Back</h2>
           </div>
           <div className="img sign-in"></div>
         </div>

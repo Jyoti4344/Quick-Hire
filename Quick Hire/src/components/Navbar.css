@@ -1,3 +1,34 @@
+/* Add these styles to your existing Navbar.css */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background-color: rgba(78, 166, 133, 0.1);
+  transition: all 0.3s ease;
+}
+
+.user-profile:hover {
+  background-color: rgba(78, 166, 133, 0.2);
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+}
+
+.user-avatar i {
+  font-size: 1.5rem;
+}
+
+.user-email {
+  font-size: 0.875rem;
+  color: var(--primary-color);
+}
+
 .navbar {
   background-color: #000000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -90,6 +121,105 @@
 .navbar-links a:hover::after {
   width: 100%; /* Underline effect on hover */
 }
+/* Add these styles to your existing Navbar.css */
+
+.user-profile-container {
+  position: relative;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background-color: rgba(78, 166, 133, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.user-profile:hover {
+  background-color: rgba(78, 166, 133, 0.2);
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+}
+
+.user-avatar i {
+  font-size: 1.5rem;
+}
+
+.user-email {
+  font-size: 0.875rem;
+  color: var(--primary-color);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: 200px;
+  z-index: 50;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.dropdown-item i {
+  font-size: 1.25rem;
+}
+
+.dropdown-divider {
+  margin: 0.25rem 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.text-red {
+  color: #dc2626 !important;
+}
+
+.text-red:hover {
+  background-color: #fee2e2 !important;
+}
+
+
 
 @media (max-width: 768px) {
   .navbar-content {

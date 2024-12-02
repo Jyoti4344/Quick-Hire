@@ -8,27 +8,45 @@ const AuthService = {
       const response = await axios.post(`${API_URL}auth/signup`, {
         username,
         email,
-        password,A
+        password,
       });
-      return response;
+      return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error(
+        "Registration error:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data || { message: error.message };
     }
   },
 
   login: async (email, password) => {
     try {
+      console.log("Attempting login for:", email);
       const response = await axios.post(`${API_URL}auth/signin`, {
         email,
         password,
       });
+
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       }
-      return response;
+      return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error("Login error:", error.response?.data || error.message);
+      throw error.response?.data || { message: error.message };
     }
+  },
+
+  logout: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  },
+
+  getCurrentUser: () => {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
   },
 
   getProtectedContent: async () => {
@@ -37,9 +55,13 @@ const AuthService = {
       const response = await axios.get(`${API_URL}api/protected`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response;
+      return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error(
+        "Protected content error:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data || { message: error.message };
     }
   },
 };

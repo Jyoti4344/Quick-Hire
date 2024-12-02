@@ -4,7 +4,12 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+// const questions = require("./questions");
 require("dotenv").config();
+
+// app.get("/api/questions", (req, res) => {
+//   res.send({ questions });
+// });
 
 // Initialize Express app
 const app = express();
@@ -82,33 +87,59 @@ app.post("/auth/signin", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Add debug logging
+    console.log("Login attempt for email:", email);
+
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found. Please register." });
+      console.log("User not found:", email);
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
     }
 
+    // Debug log for password comparison
+    console.log("Comparing passwords for user:", email);
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      console.log("Invalid password for user:", email);
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
     }
+
+    console.log("Login successful for user:", email);
 
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || "secret_key",
-      { expiresIn: "1h" }
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "24h" }
     );
-    res.json({ message: "Login successful", token });
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+      },
+    });
   } catch (error) {
-    console.error("Signin Error:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Login error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      details: error.message,
+    });
   }
 });
 
