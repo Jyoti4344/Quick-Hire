@@ -1,88 +1,138 @@
 import React, { useState, useEffect } from "react";
 import "./Login.css";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AuthService from "../common/AuthService";
 
 function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    username: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // For loading state
-  const navigate = useNavigate(); // For navigation
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const container = document.getElementById("container");
     if (container) {
-      setTimeout(() => {
-        container.classList.add("sign-in");
-      }, 200);
+      container.classList.add("sign-in");
     }
   }, []);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (error) setError("");
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError("All fields are required");
+      return false;
+    }
+    if (isSignUp) {
+      if (!formData.username) {
+        setError("Username is required");
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return false;
+      }
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    setLoading(true); // Show loading state
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setError("");
 
     try {
       if (isSignUp) {
-        // Sign up
-        if (password !== confirmPassword) {
-          setError("Passwords do not match!");
-          setLoading(false);
-          return;
+        const response = await AuthService.register(
+          formData.username,
+          formData.email,
+          formData.password
+        );
+        if (response.data.message) {
+          toggle();
+          setFormData((prev) => ({
+            ...prev,
+            username: "",
+            confirmPassword: "",
+          }));
         }
-        const response = await axios.post("http://localhost:5000/auth/signup", {
-          username,
-          email,
-          password,
-        });
-        alert(response.data.message || "Signup successful!");
-        setIsSignUp(false); // Switch to login after signup
       } else {
-        // Sign in
-        const response = await axios.post("http://localhost:5000/auth/signin", {
-          email,
-          password,
-        });
-        // Save the JWT token to localStorage
-        localStorage.setItem("token", response.data.token);
-        alert("Login successful!");
-        navigate("/dashboard"); // Redirect to dashboard or homepage
+        const response = await AuthService.login(
+          formData.email,
+          formData.password
+        );
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+          navigate("/dashboard");
+        }
       }
-    } catch (error) {
-      setError(error.response?.data?.message || "Something went wrong. Try again.");
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Network error. Please check your connection and try again."
+      );
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
   const toggle = () => {
+    setError("");
     const container = document.getElementById("container");
     if (container) {
+      if (container.dataset.animating === "true") return;
+
+      container.dataset.animating = "true";
       container.classList.toggle("sign-in");
       container.classList.toggle("sign-up");
+
+      setTimeout(() => {
+        container.dataset.animating = "false";
+      }, 1000);
     }
     setIsSignUp(!isSignUp);
   };
 
   return (
     <div id="container" className="container">
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
       <div className="row">
-        {error && <p className="error-message">{error}</p>}
         <div className="col align-items-center flex-col sign-up">
           <div className="form-wrapper align-items-center">
-            <div className="form sign-up">
+            <form onSubmit={handleSubmit} className="form sign-up">
               <div className="input-group">
                 <i className="bx bxs-user"></i>
                 <input
                   type="text"
                   placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
               <div className="input-group">
@@ -90,8 +140,10 @@ function Login() {
                 <input
                   type="email"
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
               <div className="input-group">
@@ -99,8 +151,10 @@ function Login() {
                 <input
                   type="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
               <div className="input-group">
@@ -108,32 +162,36 @@ function Login() {
                 <input
                   type="password"
                   placeholder="Confirm password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
-              <button onClick={handleSubmit} disabled={loading}>
+              <button type="submit" disabled={loading}>
                 {loading ? "Processing..." : "Sign up"}
               </button>
               <p>
                 <span>Already have an account?</span>
-                <b onClick={toggle} className="pointer">
+                <b onClick={!loading ? toggle : undefined} className="pointer">
                   Sign in here
                 </b>
               </p>
-            </div>
+            </form>
           </div>
         </div>
         <div className="col align-items-center flex-col sign-in">
           <div className="form-wrapper align-items-center">
-            <div className="form sign-in">
+            <form onSubmit={handleSubmit} className="form sign-in">
               <div className="input-group">
                 <i className="bx bxs-user"></i>
                 <input
                   type="email"
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
               <div className="input-group">
@@ -141,11 +199,13 @@ function Login() {
                 <input
                   type="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={loading}
                 />
               </div>
-              <button onClick={handleSubmit} disabled={loading}>
+              <button type="submit" disabled={loading}>
                 {loading ? "Processing..." : "Sign in"}
               </button>
               <p>
@@ -153,11 +213,11 @@ function Login() {
               </p>
               <p>
                 <span>Don't have an account?</span>
-                <b onClick={toggle} className="pointer">
+                <b onClick={!loading ? toggle : undefined} className="pointer">
                   Sign up here
                 </b>
               </p>
-            </div>
+            </form>
           </div>
         </div>
       </div>

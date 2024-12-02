@@ -4,21 +4,37 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-require("dotenv").config(); // Load environment variables
+require("dotenv").config();
 
 // Initialize Express app
 const app = express();
+
+// CORS configuration
+const corsOptions = {
+  origin: ["http://localhost:3000", "http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+// Apply middlewares
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Add pre-flight handling
+app.options("*", cors(corsOptions));
 
 // MongoDB Connection
-const DB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/quick_hire_db";
+const DB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/quick_hire_db";
 mongoose
-  .connect(DB_URI)
+  .connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1); // Exit process if unable to connect
+    process.exit(1);
   });
 
 // Define User Schema
@@ -42,22 +58,22 @@ app.post("/auth/signup", async (req, res) => {
 
   try {
     if (!username || !email || !password) {
-      return res.status(400).send({ message: "All fields are required" });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).send({ message: "Email is already registered." });
+      return res.status(400).json({ message: "Email is already registered." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).send({ message: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error("Signup Error:", error.message);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -67,24 +83,32 @@ app.post("/auth/signin", async (req, res) => {
 
   try {
     if (!email || !password) {
-      return res.status(400).send({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).send({ message: "User not found. Please register." });
+      return res
+        .status(404)
+        .json({ message: "User not found. Please register." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).send({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || "secret_key", { expiresIn: "1h" });
-    res.send({ message: "Login successful", token });
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || "secret_key",
+      { expiresIn: "1h" }
+    );
+    res.json({ message: "Login successful", token });
   } catch (error) {
     console.error("Signin Error:", error.message);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -95,19 +119,23 @@ app.post("/auth/request-password-reset", async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).send({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || "secret_key", { expiresIn: "15m" });
+    const resetToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || "secret_key",
+      { expiresIn: "15m" }
+    );
     user.resetToken = resetToken;
     user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // Token valid for 15 minutes
     await user.save();
 
     // Ideally, you should send this token via email
-    res.send({ message: "Password reset token generated", resetToken });
+    res.json({ message: "Password reset token generated", resetToken });
   } catch (error) {
     console.error("Password Reset Request Error:", error.message);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -120,7 +148,7 @@ app.post("/auth/reset-password", async (req, res) => {
 
     const user = await User.findOne({ _id: decoded.userId, resetToken: token });
     if (!user || user.resetTokenExpiry < Date.now()) {
-      return res.status(400).send({ message: "Invalid or expired token" });
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
@@ -128,10 +156,10 @@ app.post("/auth/reset-password", async (req, res) => {
     user.resetTokenExpiry = null;
     await user.save();
 
-    res.send({ message: "Password reset successful" });
+    res.json({ message: "Password reset successful" });
   } catch (error) {
     console.error("Password Reset Error:", error.message);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -139,15 +167,15 @@ app.post("/auth/reset-password", async (req, res) => {
 app.get("/api/protected", (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).send({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   jwt.verify(token, process.env.JWT_SECRET || "secret_key", (err, decoded) => {
     if (err) {
       console.error("JWT Verification Error:", err.message);
-      return res.status(403).send({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden" });
     }
-    res.send({ message: "Access granted to protected route.", user: decoded });
+    res.json({ message: "Access granted to protected route.", user: decoded });
   });
 });
 
@@ -157,29 +185,41 @@ app.get("/api/protected", (req, res) => {
 app.get("/auth/profile", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).send({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret_key");
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
-      return res.status(404).send({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
-    res.send({ user });
+    res.json({ user });
   } catch (error) {
     console.error("Profile Fetch Error:", error.message);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // Health Check
 app.get("/health", (req, res) => {
-  res.send({ message: "API is running smoothly!" });
+  res.json({ message: "API is running smoothly!" });
+});
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something broke!", error: err.message });
+});
+
+// Add 404 handling
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.url} Not Found` });
 });
 
 // Start the Server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`👉 CORS enabled for origins: ${corsOptions.origin.join(", ")}`);
 });

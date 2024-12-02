@@ -1,23 +1,47 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5001/"; // Update port to match your server.js (default: 5001)
+const API_URL = "http://localhost:5001/";
 
-// User registration
-const register = (username, email, password) => {
-    return axios.post(`${API_URL}auth/signup`, { username, email, password });
-};
+const AuthService = {
+  register: async (username, email, password) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/signup`, {
+        username,
+        email,
+        password,A
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 
-// User login
-const login = (email, password) => {
-    return axios.post(`${API_URL}auth/signin`, { email, password });
-};
+  login: async (email, password) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/signin`, {
+        email,
+        password,
+      });
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 
-// Fetch protected content (with JWT token)
-const getProtectedContent = (token) => {
-    return axios.get(`${API_URL}api/protected`, {
+  getProtectedContent: async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}api/protected`, {
         headers: { Authorization: `Bearer ${token}` },
-    });
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
-// Exporting the AuthService object
-export default { register, login, getProtectedContent };
+export default AuthService;

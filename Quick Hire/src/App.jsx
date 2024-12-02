@@ -36,7 +36,7 @@ function App() {
             <Team />
             <Footer />
           </>
-        );
+      );
     }
   };
 
@@ -49,4 +49,3 @@ function App() {
 }
 
 export default App;
-

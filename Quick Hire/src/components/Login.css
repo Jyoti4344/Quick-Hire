@@ -20,6 +20,52 @@
   padding: 0;
   box-sizing: border-box;
 }
+.error-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  z-index: 50;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Prevent form submission during animation */
+.container[data-animating="true"] form {
+  pointer-events: none;
+}
+
+/* Add smooth transitions */
+.container.sign-in .form.sign-in,
+.container.sign-up .form.sign-up {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Ensure inputs are properly styled */
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Disable pointer events during loading */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 
 .container {
   position: relative;
