@@ -13,7 +13,7 @@ require("dotenv").config();
 // });
 
 // Import OpenAI route
-const openaiRoutes = require("./openai"); // Assuming openai.js is in the same backend folder
+// const openaiRoutes = require("./openai"); // Assuming openai.js is in the same backend folder
 
 // Initialize Express app
 const app = express();

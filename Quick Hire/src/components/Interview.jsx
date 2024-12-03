@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import * as tmImage from "@teachablemachine/image";
-import * as speechCommands from "@tensorflow-models/speech-commands";
-import "./Interview.css";
+"use client"
+
+import React, { useState, useRef, useEffect } from "react"
+import "./Interview.css"
 
 const interviewQuestions = [
   "Tell me about yourself.",
@@ -9,200 +9,242 @@ const interviewQuestions = [
   "What do you consider to be your weaknesses?",
   "Why do you want this job?",
   "Where do you see yourself in five years?",
-];
+]
 
-const INTERVIEW_DURATION = 300; // 5 minutes in seconds
+const INTERVIEW_DURATION = 300 // 5 minutes in seconds
+const QUESTION_DURATION = 60 // 1 minute per question in seconds
 
 function Interview() {
-  const [isCameraOn, setIsCameraOn] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [stream, setStream] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [bodyLanguageScore, setBodyLanguageScore] = useState(0);
-  const [voiceScore, setVoiceScore] = useState(0);
-  const [voiceConfidence, setVoiceConfidence] = useState([]);
-  const [timeRemaining, setTimeRemaining] = useState(INTERVIEW_DURATION);
-  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isCameraOn, setIsCameraOn] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [stream, setStream] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState(INTERVIEW_DURATION)
+  const [questionTimeRemaining, setQuestionTimeRemaining] = useState(QUESTION_DURATION)
+  const [isInterviewStarted, setIsInterviewStarted] = useState(false)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [transcript, setTranscript] = useState("")
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [interviewScore, setInterviewScore] = useState(0)
 
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-
-  const cameraModelURL = "./my_model/cam_model/";
-  const micModelURL = "./my_model/mic_model/";
-
-  let cameraModel, webcam;
-  let micRecognizer;
+  const videoRef = useRef(null)
+  const recognitionRef = useRef(null)
 
   useEffect(() => {
     if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+      videoRef.current.srcObject = stream
     }
-  }, [stream]);
+  }, [stream])
 
+  // Timer effect for overall interview
   useEffect(() => {
-    let interval;
+    let interval
     if (isInterviewStarted && timeRemaining > 0) {
       interval = setInterval(() => {
-        setTimeRemaining((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (timeRemaining === 0) {
-      endInterview();
+        setTimeRemaining((prevTime) => {
+          if (prevTime <= 1) {
+            completeInterview()
+            return 0
+          }
+          return prevTime - 1
+        })
+      }, 1000)
     }
-    return () => clearInterval(interval);
-  }, [isInterviewStarted, timeRemaining]);
+    return () => clearInterval(interval)
+  }, [isInterviewStarted, timeRemaining])
 
-  const initCameraModel = async () => {
-    try {
-      const modelURL = cameraModelURL + "model.json";
-      const metadataURL = cameraModelURL + "metadata.json";
-
-      cameraModel = await tmImage.load(modelURL, metadataURL);
-      webcam = new tmImage.Webcam(1280, 720, true);
-      await webcam.setup();
-      await webcam.play();
-
-      canvasRef.current.width = webcam.canvas.width;
-      canvasRef.current.height = webcam.canvas.height;
-      const ctx = canvasRef.current.getContext("2d");
-
-      const loopCamera = async () => {
-        webcam.update();
-        ctx.drawImage(webcam.canvas, 0, 0);
-        const predictions = await cameraModel.predict(canvasRef.current);
-        const scores = predictions.map((p) => p.probability * 100);
-        setBodyLanguageScore(scores.reduce((a, b) => a + b) / scores.length);
-
-        if (isCameraOn) {
-          requestAnimationFrame(loopCamera);
-        }
-      };
-
-      loopCamera();
-    } catch (err) {
-      console.error("Camera model initialization error:", err);
-      setError("Error loading camera model.");
+  // Timer effect for question progression
+  useEffect(() => {
+    let interval
+    if (isInterviewStarted && questionTimeRemaining > 0) {
+      interval = setInterval(() => {
+        setQuestionTimeRemaining((prevTime) => {
+          if (prevTime <= 1) {
+            nextQuestion()
+            return QUESTION_DURATION
+          }
+          return prevTime - 1
+        })
+      }, 1000)
     }
-  };
+    return () => clearInterval(interval)
+  }, [isInterviewStarted, questionTimeRemaining])
 
-  const initMicModel = async () => {
-    try {
-      micRecognizer = speechCommands.create(
-        "BROWSER_FFT",
-        undefined,
-        micModelURL + "model.json",
-        micModelURL + "metadata.json"
-      );
-      await micRecognizer.ensureModelLoaded();
-      micRecognizer.listen(
-        (result) => {
-          const scores = result.scores.map((s) => s * 100);
-          setVoiceScore(scores.reduce((a, b) => a + b) / scores.length);
-          setVoiceConfidence((prevConfidence) => [...prevConfidence, scores.reduce((a, b) => a + b) / scores.length]);
-        },
-        { probabilityThreshold: 0.75 }
-      );
-    } catch (err) {
-      console.error("Mic model initialization error:", err);
-      setError("Error loading microphone model.");
+  // Speech recognition setup
+  useEffect(() => {
+    if (isListening) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'en-US';
+      
+        // Increase recognition accuracy
+        recognitionRef.current.maxAlternatives = 1;
+      
+        recognitionRef.current.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          setTranscript(prev => prev + finalTranscript + interimTranscript);
+        };
+
+        recognitionRef.current.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          // Restart recognition on error
+          if (isListening) {
+            recognitionRef.current.stop();
+            setTimeout(() => recognitionRef.current.start(), 500);
+          }
+        };
+
+        recognitionRef.current.onend = () => {
+          if (isListening) {
+            recognitionRef.current.start();
+          }
+        };
+
+        recognitionRef.current.start();
+      }
     }
-  };
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [isListening]);
 
   const toggleCamera = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
       if (isCameraOn && stream) {
-        stream.getVideoTracks().forEach((track) => track.stop());
-        setStream(null);
-        setIsCameraOn(false);
+        stream.getVideoTracks().forEach((track) => track.stop())
+        setStream(null)
+        setIsCameraOn(false)
       } else {
         const newStream = await navigator.mediaDevices.getUserMedia({
           video: true,
-        });
-        setStream(newStream);
-        setIsCameraOn(true);
-        await initCameraModel();
+        })
+        setStream(newStream)
+        setIsCameraOn(true)
       }
     } catch (err) {
-      console.error("Camera access error:", err);
-      setError("Could not access the camera. Check permissions.");
+      console.error("Camera access error:", err)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const toggleListening = async () => {
-    try {
-      setIsLoading(true);
-      if (isListening) {
-        micRecognizer.stopListening();
-      } else {
-        await initMicModel();
-      }
-      setIsListening(!isListening);
-    } catch (err) {
-      console.error("Mic access error:", err);
-      setError("Could not access the microphone. Check permissions.");
-    } finally {
-      setIsLoading(false);
+  const toggleListening = () => {
+    setIsListening(prev => !prev);
+    if (!isListening) {
+      setTranscript("");
     }
   };
 
   const startInterview = () => {
-    setIsInterviewStarted(true);
-    toggleCamera();
-    toggleListening();
-  };
-
-  const endInterview = () => {
-    setIsInterviewStarted(false);
-    if (isCameraOn) toggleCamera();
-    if (isListening) toggleListening();
-    setTimeRemaining(INTERVIEW_DURATION);
-    setCurrentQuestionIndex(0);
-  };
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-  };
+    setIsInterviewStarted(true)
+    setTimeRemaining(INTERVIEW_DURATION)
+    setQuestionTimeRemaining(QUESTION_DURATION)
+    toggleCamera()
+    toggleListening()
+  }
 
   const nextQuestion = () => {
     if (currentQuestionIndex < interviewQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1)
+      setQuestionTimeRemaining(QUESTION_DURATION)
+      setTranscript("")
+    } else {
+      completeInterview()
     }
-  };
+  }
 
   const prevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setCurrentQuestionIndex(prev => prev - 1)
+      setQuestionTimeRemaining(QUESTION_DURATION)
+      setTranscript("")
     }
-  };
+  }
+
+  const completeInterview = () => {
+    const score = Math.min(Math.floor(transcript.length / 100 + (INTERVIEW_DURATION - timeRemaining) / 30), 100)
+    setInterviewScore(score)
+    setShowFeedback(true)
+    endInterview()
+  }
+
+  const endInterview = () => {
+    setIsInterviewStarted(false)
+    if (isCameraOn) toggleCamera()
+    if (isListening) toggleListening()
+    setTimeRemaining(INTERVIEW_DURATION)
+    setQuestionTimeRemaining(QUESTION_DURATION)
+    setCurrentQuestionIndex(0)
+  }
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`
+  }
 
   return (
     <div className="interview-container">
+      {showFeedback && (
+        <div className="feedback-overlay">
+          <div className="feedback-dialog">
+            <h2>Interview Complete!</h2>
+            <div className="feedback-content">
+              <p>Congratulations on completing your interview!</p>
+              <div className="score-section">
+                <h3>Your Performance Score: {interviewScore}%</h3>
+                <div className="progress-bar">
+                  <div className="progress-value" style={{ width: `${interviewScore}%` }}></div>
+                </div>
+              </div>
+              <div className="feedback-details">
+                <h3>Feedback Summary:</h3>
+                <ul>
+                  <li>Questions Answered: {currentQuestionIndex + 1}/5</li>
+                  <li>Time Utilized: {formatTime(INTERVIEW_DURATION - timeRemaining)}</li>
+                  <li>Response Length: {transcript.split(' ').length} words</li>
+                </ul>
+              </div>
+            </div>
+            <button className="close-btn" onClick={() => setShowFeedback(false)}>Close Feedback</button>
+          </div>
+        </div>
+      )}
+
       <div className="interview-card">
         <div className="card-header">
           <h2 className="card-title">AI-Powered Interview Simulation</h2>
-        </div>
-        <div className="card-content">
-          {error && (
-            <div className="error-message" role="alert">
-              <span className="error-icon">⚠️</span>
-              <p>{error}</p>
+          {isInterviewStarted && (
+            <div className="timer-group">
+              <div className="timer">Total Time: {formatTime(timeRemaining)}</div>
+              <div className="timer">Question Time: {formatTime(questionTimeRemaining)}</div>
             </div>
           )}
+        </div>
+        <div className="card-content">
           <div className="interview-grid">
             <div className="video-container">
               <div className="video-wrapper">
                 {isCameraOn ? (
-                  <>
-                    <video ref={videoRef} autoPlay playsInline muted className="camera-feed" />
-                    <canvas ref={canvasRef} className="camera-canvas" />
-                  </>
+                  <video ref={videoRef} autoPlay playsInline muted className="camera-feed" />
                 ) : (
                   <div className="camera-placeholder">
                     <span className="camera-icon">📷</span>
@@ -213,74 +255,48 @@ function Interview() {
             </div>
             <div className="metrics-container">
               <div className="metrics-card">
-                <h3>Performance Metrics</h3>
-                <div className="metric">
-                  <label>Body Language</label>
-                  <div className="progress-bar">
-                    <div className="progress-value" style={{width: `${bodyLanguageScore}%`}}></div>
-                  </div>
-                  <span>{bodyLanguageScore.toFixed(2)}%</span>
+                <div className="question-navigation">
+                  <button 
+                    className="nav-btn" 
+                    onClick={prevQuestion} 
+                    disabled={!isInterviewStarted || currentQuestionIndex === 0}
+                  >
+                    ← Previous
+                  </button>
+                  <span className="question-counter">
+                    Question {currentQuestionIndex + 1} of {interviewQuestions.length}
+                  </span>
+                  <button 
+                    className="nav-btn" 
+                    onClick={nextQuestion}
+                    disabled={!isInterviewStarted || currentQuestionIndex === interviewQuestions.length - 1}
+                  >
+                    Next →
+                  </button>
                 </div>
-                <div className="metric">
-                  <label>Voice Score</label>
-                  <div className="progress-bar">
-                    <div className="progress-value" style={{width: `${voiceScore}%`}}></div>
+                <h3>Current Question</h3>
+                <p className="current-question">{interviewQuestions[currentQuestionIndex]}</p>
+                {isListening && (
+                  <div className="transcript-container">
+                    <h4>Your Response:</h4>
+                    <div className="transcript-text">{transcript}</div>
                   </div>
-                  <span>{voiceScore.toFixed(2)}%</span>
-                </div>
-                <div className="metric">
-                  <label>Voice Confidence</label>
-                  <div className="progress-bar">
-                    <div className="progress-value" style={{width: `${(voiceConfidence.reduce((a, b) => a + b, 0) / voiceConfidence.length || 0)}%`}}></div>
-                  </div>
-                  <span>{(voiceConfidence.reduce((a, b) => a + b, 0) / voiceConfidence.length || 0).toFixed(2)}%</span>
-                </div>
+                )}
               </div>
-              {isInterviewStarted && (
-                <div className="timer-card">
-                  <div className="timer">{formatTime(timeRemaining)}</div>
-                  <div className="progress-bar">
-                    <div className="progress-value" style={{width: `${(INTERVIEW_DURATION - timeRemaining) / INTERVIEW_DURATION * 100}%`}}></div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-          {isInterviewStarted && (
-            <div className="questions-card">
-              <h3>Interview Questions</h3>
-              <div className="questions-tabs">
-                {interviewQuestions.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`tab ${currentQuestionIndex === index ? 'active' : ''}`}
-                    onClick={() => setCurrentQuestionIndex(index)}
-                  >
-                    Q{index + 1}
-                  </button>
-                ))}
-              </div>
-              <div className="question-content">
-                <p>{interviewQuestions[currentQuestionIndex]}</p>
-              </div>
-              <div className="question-navigation">
-                <button onClick={prevQuestion} disabled={currentQuestionIndex === 0}>Previous</button>
-                <button onClick={nextQuestion} disabled={currentQuestionIndex === interviewQuestions.length - 1}>Next</button>
-              </div>
-            </div>
-          )}
         </div>
         <div className="card-footer">
           <div className="controls">
             <button
-              className={`control-btn ${isCameraOn ? 'active' : ''}`}
+              className={`control-btn ${isCameraOn ? "active" : ""}`}
               onClick={toggleCamera}
               disabled={isInterviewStarted || isLoading}
             >
               📷
             </button>
             <button
-              className={`control-btn ${isListening ? 'active' : ''}`}
+              className={`control-btn ${isListening ? "active" : ""}`}
               onClick={toggleListening}
               disabled={isInterviewStarted || isLoading}
             >
@@ -288,18 +304,29 @@ function Interview() {
             </button>
           </div>
           {!isInterviewStarted ? (
-            <button className="start-btn" onClick={startInterview} disabled={isLoading}>
-              ▶️ Start Interview
-            </button>
+            <>
+              <button className="start-btn" onClick={startInterview} disabled={isLoading}>
+                Start Interview
+              </button>
+              <button className="end-btn" onClick={completeInterview}>
+                End Interview
+              </button>
+            </>
           ) : (
-            <button className="end-btn" onClick={endInterview}>
-              ⏹️ End Interview
-            </button>
+            <div className="interview-controls">
+              <button className="next-btn" onClick={nextQuestion} disabled={currentQuestionIndex === interviewQuestions.length - 1}>
+                Next Question
+              </button>
+              <button className="end-btn" onClick={completeInterview}>
+                End Interview
+              </button>
+            </div>
           )}
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default Interview;
+export default Interview
+
