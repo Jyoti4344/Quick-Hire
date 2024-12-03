@@ -54,7 +54,7 @@ export default function Footer() {
             >
               <FaTwitter />
             </a>
-            <a href="mailto:info@quickhire.com">
+            <a href="mailto:info.quickhires@gmail.com">
               <FaEnvelope />
             </a>
           </div>
