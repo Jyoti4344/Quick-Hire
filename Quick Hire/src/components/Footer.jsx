@@ -41,7 +41,7 @@ export default function Footer() {
               <FaGithub />
             </a>
             <a
-              href="https://linkedin.com/company/quickhire"
+              href="https://linkedin.com/company/quickhires"
               target="_blank"
               rel="noopener noreferrer"
             >
