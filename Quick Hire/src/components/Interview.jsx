@@ -71,59 +71,58 @@ function Interview() {
   }, [isInterviewStarted, questionTimeRemaining])
 
   // Speech recognition setup
-  useEffect(() => {
-    if (isListening) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'en-US';
-      
-        // Increase recognition accuracy
-        recognitionRef.current.maxAlternatives = 1;
-      
-        recognitionRef.current.onresult = (event) => {
-          let interimTranscript = '';
-          let finalTranscript = '';
+useEffect(() => {
+  if (isListening) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = "en-US";
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript + ' ';
-            } else {
-              interimTranscript += transcript;
-            }
+      recognitionRef.current.onresult = (event) => {
+        let finalTranscript = "";
+
+        // Process only the final results to avoid duplicate interim transcripts
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + " ";
           }
+        }
 
-          setTranscript(prev => prev + finalTranscript + interimTranscript);
-        };
+        // Update transcript only with final results
+        if (finalTranscript) {
+          setTranscript((prev) => prev + finalTranscript.trim() + " ");
+        }
+      };
 
-        recognitionRef.current.onerror = (event) => {
-          console.error('Speech recognition error', event.error);
-          // Restart recognition on error
-          if (isListening) {
-            recognitionRef.current.stop();
-            setTimeout(() => recognitionRef.current.start(), 500);
-          }
-        };
+      recognitionRef.current.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
 
-        recognitionRef.current.onend = () => {
-          if (isListening) {
-            recognitionRef.current.start();
-          }
-        };
+        // Restart recognition on error
+        if (isListening) {
+          recognitionRef.current.stop();
+          setTimeout(() => recognitionRef.current.start(), 500);
+        }
+      };
 
-        recognitionRef.current.start();
-      }
+      recognitionRef.current.onend = () => {
+        if (isListening) {
+          recognitionRef.current.start();
+        }
+      };
+
+      recognitionRef.current.start();
     }
+  }
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, [isListening]);
+  return () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+}, [isListening]);
+
 
   const toggleCamera = async () => {
     try {
