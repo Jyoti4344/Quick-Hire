@@ -14,11 +14,17 @@ import "boxicons/css/boxicons.min.css";
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
 
-  const handlePageChange = (page) => { 
+  const handlePageChange = (page) => {
     setCurrentPage(page);
     if (page === "home") {
       window.scrollTo(0, 0);
     }
+  };
+
+  // Add new handler for login success
+  const handleLoginSuccess = () => {
+    // After successful login, redirect to interview page
+    handlePageChange("interview");
   };
 
   const renderPage = () => {
@@ -26,13 +32,13 @@ function App() {
       case "interview":
         return <Interview />;
       case "login":
-        return <Login onLoginSuccess={() => handlePageChange("home")} />;
+        return <Login onLoginSuccess={handleLoginSuccess} />;
       case "chat":
         return <Chat />;
       default:
         return (
           <>
-            <Home onStartClick={() => handlePageChange("interview")} />
+            <Home onStartClick={handlePageChange} />
             <About />
             <Team />
             <Footer />
@@ -52,3 +58,4 @@ function App() {
 }
 
 export default App;
+
