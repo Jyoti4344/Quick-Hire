@@ -1,21 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --primary-color: #4EA685;
-  --secondary-color: #57B894;
+  --primary-color: #4ea685;
+  --secondary-color: #57b894;
   --black: #000000;
   --white: #ffffff;
   --gray: #efefef;
   --gray-2: #757575;
-  
-  --facebook-color: #4267B2;
-  --google-color: #DB4437;
-  --twitter-color: #1DA1F2;
-  --insta-color: #E1306C;
+
+  --facebook-color: #4267b2;
+  --google-color: #db4437;
+  --twitter-color: #1da1f2;
+  --insta-color: #e1306c;
 }
 
 * {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -66,7 +66,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-
 .container {
   position: relative;
   min-height: 100vh;
@@ -102,7 +101,7 @@ button:disabled {
   width: 100%;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   transform: scale(0);
-  transition: .5s ease-in-out;
+  transition: 0.5s ease-in-out;
   transition-delay: 1s;
 }
 
@@ -126,7 +125,7 @@ button:disabled {
   padding: 1rem 3rem;
   font-size: 1rem;
   background-color: var(--gray);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   border: 0.125rem solid var(--white);
   outline: none;
   color: var(--black);
@@ -139,8 +138,8 @@ button:disabled {
 .form button {
   cursor: pointer;
   width: 100%;
-  padding: .6rem 0;
-  border-radius: .5rem;
+  padding: 0.6rem 0;
+  border-radius: 0.5rem;
   border: none;
   background-color: var(--primary-color);
   color: var(--white);
@@ -150,7 +149,7 @@ button:disabled {
 
 .form p {
   margin: 1rem 0;
-  font-size: .7rem;
+  font-size: 0.7rem;
   color: var(--black);
 }
 
@@ -218,7 +217,11 @@ button:disabled {
   height: 100vh;
   width: 300vw;
   transform: translate(35%, 0);
-  background-image: linear-gradient(-45deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  background-image: linear-gradient(
+    -45deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
   transition: 1s ease-in-out;
   z-index: 6;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
@@ -234,6 +237,195 @@ button:disabled {
 .container.sign-up::before {
   transform: translate(100%, 0);
   right: 50%;
+}
+.error-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4444;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.input-group input:focus {
+  border-color: #4caf50;
+}
+
+.input-group input.error {
+  border-color: #ff4444;
+}
+
+/* Add these new styles to your existing Login.css */
+
+.otp-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.otp-input-group {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.otp-input {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+  border: 2px solid var(--gray);
+  border-radius: 0.5rem;
+  background: var(--gray);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.otp-input:focus {
+  border-color: var(--primary-color);
+}
+
+.otp-info {
+  color: var(--gray-2);
+  margin: 1rem 0;
+}
+
+.verify-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.verify-btn:hover {
+  background-color: var(--secondary-color);
+}
+
+.otp-footer {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.resend-btn:disabled {
+  color: var(--gray-2);
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: var(--gray-2);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.cancel-btn:hover {
+  color: var(--black);
+}
+
+.login-options {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.login-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.login-options input[type="radio"] {
+  cursor: pointer;
+}
+
+.forgot-password-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.forgot-password-container h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-password-container .input-group {
+  margin-bottom: 1.5rem;
+}
+
+.forgot-password-container button {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Add these styles to your existing Login.css */
+.form .input-group input {
+  transition: border-color 0.3s ease;
+}
+
+.form button {
+  transition: background-color 0.3s ease;
+}
+
+.form button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.pointer {
+  cursor: pointer;
+  color: #4caf50;
+  transition: color 0.3s ease;
+}
+
+.pointer:hover {
+  color: #45a049;
 }
 
 @media only screen and (max-width: 425px) {
@@ -294,8 +486,7 @@ button:disabled {
   }
 
   .text h2 {
-    margin: .5rem;
+    margin: 0.5rem;
     font-size: 2rem;
   }
 }
-

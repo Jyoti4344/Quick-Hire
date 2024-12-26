@@ -49,16 +49,126 @@ const AuthService = {
     return user ? JSON.parse(user) : null;
   },
 
-  getProtectedContent: async () => {
+  sendLoginOTP: async (email) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}api/protected`, {
-        headers: { Authorization: `Bearer ${token}` },
+      console.log(`Sending login OTP to ${email}`);
+      const response = await axios.post(`${API_URL}auth/send-login-otp`, {
+        email,
+      });
+      console.log("Login OTP sent successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Send login OTP error:", error.response?.data || error.message);
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  verifyLoginOTP: async (email, otp) => {
+    try {
+      console.log(`Verifying login OTP for ${email}`);
+      const response = await axios.post(`${API_URL}auth/verify-login-otp`, {
+        email,
+        otp,
+      });
+      console.log("Login OTP verified successfully:", response.data);
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+      return response.data;
+    } catch (error) {
+      console.error("Verify login OTP error:", error.response?.data || error.message);
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  sendSignupOTP: async (email) => {
+    try {
+      console.log(`Sending signup OTP to ${email}`);
+      const response = await axios.post(`${API_URL}auth/send-signup-otp`, {
+        email,
+      });
+      console.log("Signup OTP sent successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Send signup OTP error:", error.response?.data || error.message);
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  verifySignupOTP: async (email, otp) => {
+    try {
+      console.log(`Verifying signup OTP for ${email}`);
+      const response = await axios.post(`${API_URL}auth/verify-signup-otp`, {
+        email,
+        otp,
+      });
+      console.log("Signup OTP verified successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Verify signup OTP error:", error.response?.data || error.message);
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  sendPasswordResetOTP: async (email) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/send-reset-otp`, {
+        email,
       });
       return response.data;
     } catch (error) {
       console.error(
-        "Protected content error:",
+        "Send password reset OTP error:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  verifyPasswordResetOTP: async (email, otp) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/verify-reset-otp`, {
+        email,
+        otp,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Verify password reset OTP error:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  resetPassword: async (email, newPassword, otp) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/reset-password`, {
+        email,
+        newPassword,
+        otp,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Reset password error:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data || { message: error.message };
+    }
+  },
+
+  checkOTPStatus: async (email, isSignUp) => {
+    try {
+      const response = await axios.post(`${API_URL}auth/check-otp-status`, {
+        email,
+        isSignUp,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Check OTP status error:",
         error.response?.data || error.message
       );
       throw error.response?.data || { message: error.message };
@@ -67,3 +177,4 @@ const AuthService = {
 };
 
 export default AuthService;
+

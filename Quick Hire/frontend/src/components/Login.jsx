@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import AuthService from "../common/AuthService";
 import { useAuth } from "../context/AuthContext";
+import OTPVerification from "./OtpVerification";
+import ForgotPassword from "./ForgotPassword";
 import "./Login.css";
 
 function Login({ onLoginSuccess }) {
   const { setUser } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState("password"); // 'password' or 'otp'
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +19,8 @@ function Login({ onLoginSuccess }) {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [tempEmail, setTempEmail] = useState("");
+  const [otpStatus, setOtpStatus] = useState(null);
 
   useEffect(() => {
     const container = document.getElementById("container");
@@ -21,6 +28,20 @@ function Login({ onLoginSuccess }) {
       container.classList.add("sign-in");
     }
   }, []);
+
+  useEffect(() => {
+    if (showOTP) {
+      const checkStatus = async () => {
+        try {
+          const status = await AuthService.checkOTPStatus(tempEmail, isSignUp);
+          setOtpStatus(status);
+        } catch (err) {
+          console.error("Error checking OTP status:", err);
+        }
+      };
+      checkStatus();
+    }
+  }, [showOTP, tempEmail, isSignUp]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,24 +53,41 @@ function Login({ onLoginSuccess }) {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password) {
-      setError("Email and password are required");
+    if (!formData.email) {
+      setError("Email is required");
       return false;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+
     if (isSignUp) {
       if (!formData.username) {
         setError("Username is required");
         return false;
       }
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match");
-        return false;
+      if (loginMethod === "password") {
+        if (!formData.password) {
+          setError("Password is required");
+          return false;
+        }
+        if (formData.password.length < 8) {
+          setError("Password must be at least 8 characters");
+          return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          setError("Passwords do not match");
+          return false;
+        }
       }
-      if (formData.password.length < 6) {
-        setError("Password must be at least 6 characters");
-        return false;
-      }
+    } else if (loginMethod === "password" && !formData.password) {
+      setError("Password is required");
+      return false;
     }
+
     return true;
   };
 
@@ -62,51 +100,76 @@ function Login({ onLoginSuccess }) {
 
     try {
       if (isSignUp) {
+        console.log("Attempting to register:", formData.email);
         const response = await AuthService.register(
           formData.username,
           formData.email,
           formData.password
         );
         console.log("Registration successful:", response);
-        toggle();
-        setFormData((prev) => ({
-          ...prev,
-          username: "",
-          confirmPassword: "",
-        }));
+        setTempEmail(formData.email);
+        setShowOTP(true);
       } else {
-        console.log("Attempting login with:", formData.email);
-        const response = await AuthService.login(
-          formData.email,
-          formData.password
-        );
-        console.log("Login successful:", response);
-        setUser(response.user);
-        if (onLoginSuccess) {
+        if (loginMethod === "password") {
+          console.log("Attempting password login for:", formData.email);
+          const response = await AuthService.login(
+            formData.email,
+            formData.password
+          );
+          console.log("Login successful:", response);
+          setUser(response.user);
           onLoginSuccess();
+        } else {
+          console.log("Sending login OTP for:", formData.email);
+          await AuthService.sendLoginOTP(formData.email);
+          console.log("Login OTP sent successfully");
+          setTempEmail(formData.email);
+          setShowOTP(true);
         }
       }
     } catch (err) {
       console.error("Auth error:", err);
-      setError(
-        err.message ||
-          "An error occurred. Please check your credentials and try again."
-      );
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleOTPVerify = async (otp) => {
+    try {
+      let response;
+      if (isSignUp) {
+        console.log("Verifying signup OTP for:", tempEmail);
+        response = await AuthService.verifySignupOTP(tempEmail, otp);
+      } else {
+        console.log("Verifying login OTP for:", tempEmail);
+        response = await AuthService.verifyLoginOTP(tempEmail, otp);
+      }
+      console.log("OTP verification successful:", response);
+      setUser(response.user);
+      onLoginSuccess();
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      throw new Error(err.message || "Invalid OTP");
+    }
+  };
+
+  const handleOTPCancel = () => {
+    setShowOTP(false);
+    setTempEmail("");
+  };
+
   const toggle = () => {
     if (loading) return;
-    setError("");
     setIsSignUp((prev) => !prev);
+    setLoginMethod("password");
     setFormData({
       email: "",
       password: "",
       username: "",
       confirmPassword: "",
     });
+    setError("");
     const container = document.getElementById("container");
     if (container) {
       container.classList.toggle("sign-in");
@@ -114,10 +177,37 @@ function Login({ onLoginSuccess }) {
     }
   };
 
+  if (showOTP) {
+    return (
+      <OTPVerification
+        email={tempEmail}
+        onVerify={handleOTPVerify}
+        onResend={() => isSignUp ? AuthService.sendSignupOTP(tempEmail) : AuthService.sendLoginOTP(tempEmail)}
+        onCancel={handleOTPCancel}
+        isSignUp={isSignUp}
+        otpStatus={otpStatus}
+      />
+    );
+  }
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword
+        onClose={() => setShowForgotPassword(false)}
+        onPasswordReset={() => {
+          setShowForgotPassword(false);
+          setError(
+            "Password reset successful. Please login with your new password."
+          );
+        }}
+      />
+    );
+  }
+
   return (
     <div id="container" className="container">
       {error && (
-        <div className="error-banner" role="alert">
+        <div className="error-message" role="alert">
           {error}
         </div>
       )}
@@ -153,13 +243,13 @@ function Login({ onLoginSuccess }) {
                 <i className="bx bxs-lock-alt"></i>
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (min. 8 characters)"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={loading}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
               <div className="input-group">
@@ -190,7 +280,7 @@ function Login({ onLoginSuccess }) {
           <div className="form-wrapper align-items-center">
             <form onSubmit={handleSubmit} className="form sign-in">
               <div className="input-group">
-                <i className="bx bxs-user"></i>
+                <i className="bx bx-mail-send"></i>
                 <input
                   type="email"
                   placeholder="Email"
@@ -201,24 +291,59 @@ function Login({ onLoginSuccess }) {
                   required
                 />
               </div>
-              <div className="input-group">
-                <i className="bx bxs-lock-alt"></i>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  required
-                />
+              {loginMethod === "password" && (
+                <div className="input-group">
+                  <i className="bx bxs-lock-alt"></i>
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              )}
+              <div className="login-options">
+                <label>
+                  <input
+                    type="radio"
+                    name="loginMethod"
+                    value="password"
+                    checked={loginMethod === "password"}
+                    onChange={(e) => setLoginMethod(e.target.value)}
+                  />
+                  Password
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="loginMethod"
+                    value="otp"
+                    checked={loginMethod === "otp"}
+                    onChange={(e) => setLoginMethod(e.target.value)}
+                  />
+                  OTP
+                </label>
               </div>
               <button type="submit" disabled={loading}>
-                {loading ? "Processing..." : "Sign in"}
+                {loading
+                  ? "Processing..."
+                  : loginMethod === "password"
+                  ? "Sign in"
+                  : "Send OTP"}
               </button>
-              <p>
-                <b>Forgot password?</b>
-              </p>
+              {loginMethod === "password" && (
+                <p>
+                  <b
+                    onClick={() => setShowForgotPassword(true)}
+                    className="pointer"
+                  >
+                    Forgot password?
+                  </b>
+                </p>
+              )}
               <p>
                 <span>Don't have an account?</span>
                 <b onClick={toggle} className="pointer">
@@ -248,3 +373,4 @@ function Login({ onLoginSuccess }) {
 }
 
 export default Login;
+
